@@ -1,0 +1,71 @@
+Jvm : java virtual machine 虚拟计算机,抽象计算机
+抽象出自己的:硬件架构(处理器,堆栈,程寄存器),  指令系统
+
+虚拟机实例: 随java程序的产生和结束而诞生和死亡.同时运行3个java程序会同时产生3个虚拟机实例, 而不是公用一个实例.
+换句话说, 虚拟机实例的天生职责是运行java程序,其他时候不会存在.
+
+内存模型:  内存模型的衔接上游和下游是classLoader subsystem,Garbage collection, execute engine, jni
+内存模型包括一下几个部分:
+-虚拟机栈 vm stacks :   keep thread(pramater, varible , etc ) frame state into stack every
+-本地方法栈 native method stacks : like above item
+-方法区 methord area : include type info( class info, contant, static variable), this area is accessed by every thread. this is a special area in methord space called Constant pool.
+
+        the space of method area is uncertained, can be adjust by need.
+        methord space can be placed in heap or vm's heap is not certained.
+        methord space can also be garbage collection because some type info is dynamic generated.
+
+        so what is the type info :  name,  parent info name, access modifier, interface prameter info list
+-程序计数器(寄存器) program count register : 多线程时的程序指针,指向下一条将被执行的代码.
+-堆叠 heap : the heap store instance things which is defined in methed area,  the method space store all the type info defination. the heap just use some Id or address to notify the type of every object instance;
+
+        the heap is the largest space of vm to store things.
+        the heap is the main target of garbage system. so the heap is also called GC heap.
+vm heap prameter:
+    -Xmx : max heap size;
+    -Xms : heap initial size;
+
+
+about the gc:
+    gc use a theory called "generaton collection" to do its work. the instance is actually stored in different section of heap , whitch is differed by the time the instance had lived.
+    the short live instances stored in edin space. user high frequency scan to collect.
+    the longer live instances stored in survice space.
+    the longest live instances stored in tenured space.
+    to meature the time the instance lived, is actually defined by the times the instance avoid be collected by the gc.
+
+
+so what is the young generation and old generation category into the three spaces.
+the edin and survivor space in young generation. the survivor genetion divided by from space anf to space,
+the tenured space in old generation.
+
+
+what is the permanent Generation and premanent space:
+    It's the method space. so where is it? mybe in heap or vm heap. it's soldom be gabarged by gc.
+    -XX:PermSize : initial size of permSize.
+    -XX:MaxPermSize : max size of permSize.
+
+
+备注：通常将对新生代进行的回收称为Minor GC；对旧生代进行的回收称为Major GC，但由于Major GC除并发GC外均需对整个堆进行扫描和回收，因此又称为Full GC。
+
+
+方法区的Class信息,又称为永久代,是否属于Java堆？
+以JDK8之前的HotSpot VM为上下文，“8个G”是-Xmx8g么？是的话，PermGen不在这8G里。
+其实非JVM程序员对了解这块知识几乎没有什么多大作用。
+------------------------
+如果那8G指的是-Xmx 8G，那么256M不在其中。
+但是永久代/方法区也属于GC Heap的一部分。
+另外，方法区（method area）只是JVM规范中定义的一个概念，用于存储类信息、常量池、静态变量、JIT编译后的代码等数据，具体放在哪里，不同的实现可以放在不同的地方。 甚至上面不通的东西也可以分散存储起来.
+而永久代是Hotspot虚拟机特有的概念，是方法区的一种实现，别的JVM都没有这个东西。在Java 6中，方法区中包含的数据，除了JIT编译生成的代码存放在native memory的CodeCache区域，其他都存放在永久代；在Java 7中，Symbol的存储从PermGen移动到了native memory，并且把静态变量从instanceKlass末尾（位于PermGen内）移动到了java.lang.Class对象的末尾（位于普通Java heap内）；在Java 8中，永久代被彻底移除，取而代之的是另一块与堆不相连的本地内存——元空间（Metaspace）,‑XX:MaxPermSize 参数失去了意义，取而代之的是-XX:MaxMetaspaceSize。
+
+
+总体上说: 方法区是vm规范的逻辑上独立的, 但是物理上的实现是靠不通虚拟的.并且永久代这个东西也是特定虚拟机才有的.
+jdk8永久代变成了metaspace，换汤不换药
+
+jdk8永久代变成了metaspace，换汤不换药
+之所以叫perm，其实主要原因在有最大内存限制，也是hotspot jvm设计的一个败笔，其他jvm基本都统一一个heap内存管理。jdk8之后hotspot jvm识趣的修改了这样的设计。
+
+之所以叫perm，其实主要原因在有最大内存限制，也是hotspot jvm设计的一个败笔，其他jvm基本都统一一个heap内存管理。jdk8之后hotspot jvm识趣的修改了这样的设计。
+
+
+JAVA_OPTS = -Xms 初始jvm
+
+
